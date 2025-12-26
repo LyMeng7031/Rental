@@ -1,4 +1,4 @@
-package entity;
+package com.g6.Rental.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
