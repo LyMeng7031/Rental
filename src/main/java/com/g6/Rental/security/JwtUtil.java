@@ -3,7 +3,7 @@ package com.g6.Rental.security;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import com.g6.Rental.entity.Role;
@@ -27,11 +27,11 @@ public class JwtUtil {
     }
 
     // ✅ Generate token
-    public String generateToken(Long userId, Set<Role> roles) {
+    public String generateToken(Long userId, List<Role> roles) {
 
-        Set<String> roleNames = roles.stream()
+        List<String> roleNames = roles.stream()
                 .map(Role::getName)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
 
         return Jwts.builder()
                 .setSubject(String.valueOf(userId))
@@ -71,7 +71,7 @@ public class JwtUtil {
 
     // ✅ Extract roles
     @SuppressWarnings("unchecked")
-    public Set<String> getRolesFromToken(String token) {
-        return parseClaims(token).get("roles", Set.class);
+    public List<String> getRolesFromToken(String token) {
+        return parseClaims(token).get("roles", List.class);
     }
 }
