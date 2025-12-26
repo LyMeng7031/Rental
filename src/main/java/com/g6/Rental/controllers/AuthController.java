@@ -1,5 +1,24 @@
 package com.g6.Rental.controllers;
 
+import com.g6.Rental.dto.request.RegisterRequest;
+import com.g6.Rental.dto.response.AuthResponse;
+import com.g6.Rental.services.AuthService;
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
+
+    private final AuthService authService;
+
+
+    @PostMapping("/register")
+    public AuthResponse register(@RequestBody RegisterRequest request) {
+        return authService.register(request);
+    }
+
     
 }
