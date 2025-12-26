@@ -2,6 +2,9 @@ package com.g6.Rental.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -16,7 +19,9 @@ public class Role {
     @Column(unique = true, nullable = false)
     private String name;
 
+   
     @ManyToMany(mappedBy = "roles")
-    private Set<User> users;
+    private List<User> users = new ArrayList<>();
+
 
 }
