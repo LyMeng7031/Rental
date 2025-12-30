@@ -1,9 +1,13 @@
 package com.g6.Rental.services.impl;
+
 import com.g6.Rental.security.JwtUtil;
+import com.g6.Rental.dto.request.LoginRequest;
 import com.g6.Rental.dto.request.RegisterRequest;
 import com.g6.Rental.dto.response.AuthResponse;
 import com.g6.Rental.entity.Role;
 import com.g6.Rental.entity.User;
+import com.g6.Rental.exception.BadRequestException;
+import com.g6.Rental.exception.ResourceNotFoundException;
 import com.g6.Rental.repository.RoleRepository;
 import com.g6.Rental.repository.UserRepository;
 import com.g6.Rental.services.AuthService;
@@ -14,7 +18,6 @@ import java.util.List;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 
 @Service
 @RequiredArgsConstructor
@@ -30,10 +33,10 @@ public class AuthServiceImpl implements AuthService {
 
         // Check if username or email already exists
         if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
-            throw new RuntimeException("Username is already exist");
+            throw new BadRequestException("Username is already exist");
         }
         if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
-            throw new RuntimeException("Email is already registered");
+            throw new BadRequestException("Email is already registered");
         }
 
         User user = new User();
@@ -46,7 +49,7 @@ public class AuthServiceImpl implements AuthService {
         user.setStatus("ACTIVE");
 
         Role defaultRole = roleRepository.findByName("user")
-                .orElseThrow(() -> new RuntimeException("Default role user not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Default role user not found"));
         List<Role> roles = new ArrayList<>();
         roles.add(defaultRole);
         user.setRoles(roles);
@@ -66,5 +69,25 @@ public class AuthServiceImpl implements AuthService {
                 token
 
         );
+    }
+
+    @Override
+    public AuthResponse login(LoginRequest loginRequest) {
+        User user = userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("User not found with email: " + loginRequest.getEmail()));
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            throw new ResourceNotFoundException("Invalid password");
+        }
+        String token = jwtUtil.generateToken(user.getId(), user.getRoles());
+        return new AuthResponse(
+                user.getId(),
+                user.getFullName(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getProfileImage(),
+                user.getStatus(),
+                token);
     }
 }

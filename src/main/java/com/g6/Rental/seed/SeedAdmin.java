@@ -56,6 +56,7 @@ public class SeedAdmin implements CommandLineRunner {
                     List<Role> roles = new ArrayList<>();
                     roles.add(defaultRole);
                     roles.add(adminRole);
+                    adminUser.setRoles(roles);
 
                     userRepository.save(adminUser);
                 });
