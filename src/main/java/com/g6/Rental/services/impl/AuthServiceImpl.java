@@ -1,5 +1,6 @@
 package com.g6.Rental.services.impl;
 import com.g6.Rental.security.JwtUtil;
+import com.g6.Rental.dto.request.LoginRequest;
 import com.g6.Rental.dto.request.RegisterRequest;
 import com.g6.Rental.dto.response.AuthResponse;
 import com.g6.Rental.entity.Role;
@@ -10,8 +11,10 @@ import com.g6.Rental.services.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.HashSet;
-import java.util.Set;
+
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +47,7 @@ public class AuthServiceImpl implements AuthService {
 
         Role defaultRole = roleRepository.findByName("user")
                 .orElseThrow(() -> new RuntimeException("Default role user not found"));
-        Set<Role> roles = new HashSet<>();
+        List<Role> roles = new ArrayList<>();
         roles.add(defaultRole);
         user.setRoles(roles);
 
@@ -63,5 +66,25 @@ public class AuthServiceImpl implements AuthService {
                 token
 
         );
+
     }
+    @Override
+    public AuthResponse login(LoginRequest loginRequest) {
+        User user = userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + loginRequest.getEmail()));
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid password");
+        }
+        String token = jwtUtil.generateToken(user.getId(), user.getRoles());
+        return new AuthResponse(
+                user.getId(),
+                user.getFullName(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getProfileImage(),
+                user.getStatus(),
+                token
+        );
+    }   
 }

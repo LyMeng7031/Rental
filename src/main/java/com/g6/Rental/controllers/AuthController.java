@@ -1,5 +1,6 @@
 package com.g6.Rental.controllers;
 
+import com.g6.Rental.dto.request.LoginRequest;
 import com.g6.Rental.dto.request.RegisterRequest;
 import com.g6.Rental.dto.response.AuthResponse;
 import com.g6.Rental.services.AuthService;
@@ -18,6 +19,11 @@ public class AuthController {
     @PostMapping("/register")
     public AuthResponse register(@RequestBody RegisterRequest request) {
         return authService.register(request);
+    }
+
+    @PostMapping("/login")
+    public AuthResponse login(@RequestBody LoginRequest request) {
+        return authService.login(request);  
     }
 
     
