@@ -1,20 +1,20 @@
 package com.g6.Rental.services.impl;
-
 import com.g6.Rental.security.JwtUtil;
 import com.g6.Rental.dto.request.RegisterRequest;
 import com.g6.Rental.dto.response.AuthResponse;
 import com.g6.Rental.entity.Role;
 import com.g6.Rental.entity.User;
-import com.g6.Rental.exception.BadRequestException;
-import com.g6.Rental.exception.ResourceNotFoundException;
 import com.g6.Rental.repository.RoleRepository;
 import com.g6.Rental.repository.UserRepository;
 import com.g6.Rental.services.AuthService;
 import lombok.RequiredArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.HashSet;
-import java.util.Set;
+
 
 @Service
 @RequiredArgsConstructor
@@ -30,10 +30,10 @@ public class AuthServiceImpl implements AuthService {
 
         // Check if username or email already exists
         if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
-            throw new BadRequestException("Username is already exist");
+            throw new RuntimeException("Username is already exist");
         }
         if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
-            throw new BadRequestException("Email is already registered");
+            throw new RuntimeException("Email is already registered");
         }
 
         User user = new User();
@@ -46,8 +46,8 @@ public class AuthServiceImpl implements AuthService {
         user.setStatus("ACTIVE");
 
         Role defaultRole = roleRepository.findByName("user")
-                .orElseThrow(() -> new ResourceNotFoundException("Default role user not found"));
-        Set<Role> roles = new HashSet<>();
+                .orElseThrow(() -> new RuntimeException("Default role user not found"));
+        List<Role> roles = new ArrayList<>();
         roles.add(defaultRole);
         user.setRoles(roles);
 

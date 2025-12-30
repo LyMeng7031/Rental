@@ -3,8 +3,10 @@ package com.g6.Rental.security;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import com.g6.Rental.entity.Role;
 import io.jsonwebtoken.Claims;
@@ -15,23 +17,21 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtUtil {
 
-    private static final String SECRET =
-            "my-very-strong-secret-key-that-is-long-enough-123456";
     private static final long EXPIRATION_MS = 3600000; // 1 hour
 
     private final Key key;
 
-    public JwtUtil() {
+    public JwtUtil(@Value("${SECRET_KEY}") String SECRET) {
         String base64Secret = Base64.getEncoder().encodeToString(SECRET.getBytes());
         this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(base64Secret));
     }
 
-    // ✅ Generate token
-    public String generateToken(Long userId, Set<Role> roles) {
+ 
+    public String generateToken(Long userId, List<Role> roles) {
 
-        Set<String> roleNames = roles.stream()
+        List<String> roleNames = roles.stream()
                 .map(Role::getName)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
 
         return Jwts.builder()
                 .setSubject(String.valueOf(userId))
@@ -42,7 +42,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    // ✅ Validate token
+    // Validate token
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
@@ -55,7 +55,7 @@ public class JwtUtil {
         }
     }
 
-    // ✅ Parse claims
+    // Parse claims
     public Claims parseClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -64,14 +64,14 @@ public class JwtUtil {
                 .getBody();
     }
 
-    // ✅ Extract userId
+    //  Extract userId
     public Long getUserIdFromToken(String token) {
         return Long.parseLong(parseClaims(token).getSubject());
     }
 
-    // ✅ Extract roles
+    // Extract roles
     @SuppressWarnings("unchecked")
-    public Set<String> getRolesFromToken(String token) {
-        return parseClaims(token).get("roles", Set.class);
+    public List<String> getRolesFromToken(String token) {
+        return parseClaims(token).get("roles", List.class);
     }
 }
