@@ -1,9 +1,12 @@
 package com.g6.Rental.services.impl;
+
 import com.g6.Rental.security.JwtUtil;
 import com.g6.Rental.dto.request.RegisterRequest;
 import com.g6.Rental.dto.response.AuthResponse;
 import com.g6.Rental.entity.Role;
 import com.g6.Rental.entity.User;
+import com.g6.Rental.exception.BadRequestException;
+import com.g6.Rental.exception.ResourceNotFoundException;
 import com.g6.Rental.repository.RoleRepository;
 import com.g6.Rental.repository.UserRepository;
 import com.g6.Rental.services.AuthService;
@@ -27,10 +30,10 @@ public class AuthServiceImpl implements AuthService {
 
         // Check if username or email already exists
         if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
-            throw new RuntimeException("Username is already taken");
+            throw new BadRequestException("Username is already exist");
         }
         if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
-            throw new RuntimeException("Email is already registered");
+            throw new BadRequestException("Email is already registered");
         }
 
         User user = new User();
@@ -43,7 +46,7 @@ public class AuthServiceImpl implements AuthService {
         user.setStatus("ACTIVE");
 
         Role defaultRole = roleRepository.findByName("user")
-                .orElseThrow(() -> new RuntimeException("Default role user not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Default role user not found"));
         Set<Role> roles = new HashSet<>();
         roles.add(defaultRole);
         user.setRoles(roles);
