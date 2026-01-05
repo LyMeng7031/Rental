@@ -15,8 +15,8 @@ public class RoleController {
     private final RoleService roleService;
 
 @PostMapping("/add-agent")
-public ResponseEntity<String> addAgentRole(@RequestHeader("Authorization") String token) {
-    String message = roleService.addAgentRole(token);
+public ResponseEntity<String> addAgentRole(@RequestHeader("Authorization") String authHeader) {
+    String message = roleService.addAgentRole(authHeader);
     return ResponseEntity.ok(message);
 }
 

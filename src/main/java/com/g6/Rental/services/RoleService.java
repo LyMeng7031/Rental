@@ -6,6 +6,6 @@ import org.springframework.stereotype.Service;
 @Service
 public interface RoleService {
 
-    String addAgentRole(String token);
+    String addAgentRole(String authHeader);
 
 }

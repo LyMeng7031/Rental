@@ -1,6 +1,7 @@
 package com.g6.Rental.security;
 
 import java.io.IOException;
+import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -9,8 +10,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.g6.Rental.entity.User;
-import com.g6.Rental.repository.UserRepository;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -22,7 +21,6 @@ import jakarta.servlet.http.HttpServletResponse;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -45,20 +43,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         Long userId = jwtUtil.getUserIdFromToken(jwt);
-        User user = userRepository.findById(userId).orElse(null);
-        if (user == null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+        List<String> roleNames = jwtUtil.getRolesFromToken(jwt);
 
         // Map roles to Spring authorities
-        var authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().toUpperCase()))
+        var authorities = roleNames.stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()))
                 .toList();
 
         UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(user, null, authorities);
-
+                new UsernamePasswordAuthenticationToken(userId, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         filterChain.doFilter(request, response);
