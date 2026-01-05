@@ -89,4 +89,44 @@ public PropertyResponse createProperty(PropertyRequest request, String authHeade
             imageUrls
     );
 }
+
+
+@Override
+public List<PropertyResponse> getAllPropertiesByUserId(String authHeader) {
+    String token = authHeader.substring(7);
+    Long userId = jwtUtil.getUserIdFromToken(token);
+    List<Property> properties = propertyRepository.findByUser_Id(userId);
+    return properties.stream().map(property -> new PropertyResponse(
+            property.getId(),
+            property.getTitle(),
+            property.getDescription(),
+            property.getLocation(),
+            property.getPrice().doubleValue(),
+            property.getType(),
+            property.isAvailable(),
+            property.getImages().stream().map(PropertyImage::getImageUrl).toList()
+    )).toList();
+
+}
+
+@Override
+public PropertyResponse getPropertyIdByUserId(Long propertyId, String authHeader) {
+    String token = authHeader.substring(7);
+    Long userId = jwtUtil.getUserIdFromToken(token);
+    Property property = propertyRepository.findByIdAndUser_Id(propertyId, userId)
+            .orElseThrow(() -> new ResourceNotFoundException("Property not found"));
+    return new PropertyResponse(
+            property.getId(),
+            property.getTitle(),
+            property.getDescription(),
+            property.getLocation(),
+            property.getPrice().doubleValue(),
+            property.getType(),
+            property.isAvailable(),
+            property.getImages().stream().map(PropertyImage::getImageUrl).toList()
+    );
+
+}
+
+
 }
