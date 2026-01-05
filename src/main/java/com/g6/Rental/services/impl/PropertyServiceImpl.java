@@ -89,4 +89,50 @@ public PropertyResponse createProperty(PropertyRequest request, String authHeade
             imageUrls
     );
 }
+
+ // ✅ Get all properties
+    @Override
+    public List<PropertyResponse> getAllProperties() {
+        return propertyRepository.findAll()
+                .stream()
+                .map(property -> {
+                    List<String> imageUrls = (property.getImages() != null) ?
+                            property.getImages().stream().map(PropertyImage::getImageUrl).toList() :
+                            List.of();
+                             return new PropertyResponse(
+                            property.getId(),
+                            property.getTitle(),
+                            property.getDescription(),
+                            property.getLocation(),
+                            property.getPrice().doubleValue(),
+                            property.getType(),
+                            property.isAvailable(),
+                            imageUrls
+                    );
+                }).toList();
+    }
+    // ✅ Get property by ID
+    @Override
+    public PropertyResponse getPropertyById(Long id) {
+        Property property = propertyRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Property not found with id: " + id));
+        return mapToResponse(property);
+    }
+
+    // Helper to map Property → PropertyResponse
+    private PropertyResponse mapToResponse(Property property) {
+        List<String> imageUrls = (property.getImages() != null) ?
+                property.getImages().stream().map(PropertyImage::getImageUrl).toList() :
+                List.of();
+                return new PropertyResponse(
+                property.getId(),
+                property.getTitle(),
+                property.getDescription(),
+                property.getLocation(),
+                property.getPrice().doubleValue(),
+                property.getType(),
+                property.isAvailable(),
+                imageUrls
+        );
+    }
 }
