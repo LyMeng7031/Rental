@@ -18,4 +18,7 @@ public interface PropertyService {
     List<PropertyResponse> getAllPropertiesByUserId(String authHeader);
 
     PropertyResponse getPropertyIdByUserId(Long propertyId, String authHeader);
+    
+    PropertyResponse updateProperty(Long propertyId, PropertyRequest request, String authHeader);
+
 }
