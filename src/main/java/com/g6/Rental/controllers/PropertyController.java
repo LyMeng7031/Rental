@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -60,5 +62,14 @@ public class PropertyController {
             @RequestHeader("Authorization") String authHeader) {
         return propertyService.updateProperty(propertyId, request, authHeader);
     }
+@DeleteMapping("/delete/{propertyId}")
+public ResponseEntity<String> deleteProperty(
+        @PathVariable Long propertyId,
+        @RequestHeader("Authorization") String authHeader) {
+
+    propertyService.deleteProperty(propertyId, authHeader);
+    return ResponseEntity.ok("Property deleted successfully");
+}
+
 
 }
