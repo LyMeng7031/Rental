@@ -24,4 +24,6 @@ public class PropertyResponse {
         this.available = available;
         this.imageUrls = imageUrls;
     }
+
+    
 }

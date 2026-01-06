@@ -222,5 +222,23 @@ public class PropertyServiceImpl implements PropertyService {
                     .toList());
     }
 
+    @Override
+public void deleteProperty(Long propertyId, String authHeader) {
+    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        throw new RuntimeException("Invalid Authorization header");
+    }
+
+    String token = authHeader.substring(7);
+    Long userId = jwtUtil.getUserIdFromToken(token);
+
+    Property property = propertyRepository
+            .findByIdAndUser_Id(propertyId, userId)
+            .orElseThrow(() ->
+                    new ResourceNotFoundException("Property not found or access denied")
+            );
+
+    propertyRepository.delete(property);
+}
+
 
 }

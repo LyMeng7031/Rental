@@ -21,4 +21,7 @@ public interface PropertyService {
     
     PropertyResponse updateProperty(Long propertyId, PropertyRequest request, String authHeader);
 
+void deleteProperty(Long propertyId, String authHeader);
+
+
 }
