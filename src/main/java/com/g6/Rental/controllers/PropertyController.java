@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 
-
 @RestController
 @RequestMapping("/api/properties")
 @RequiredArgsConstructor
@@ -25,19 +24,32 @@ public class PropertyController {
     private final PropertyService propertyService;
 
     @PostMapping("/create")
-    public PropertyResponse postMethodName(@RequestBody PropertyRequest request, @RequestHeader("Authorization") String authHeader) {
+    public PropertyResponse postMethodName(@RequestBody PropertyRequest request,
+            @RequestHeader("Authorization") String authHeader) {
         return propertyService.createProperty(request, authHeader);
+    }
+
+    // ✅ GET all properties
+    @GetMapping("/getAll")
+    public List<PropertyResponse> getAllProperties() {
+        return propertyService.getAllProperties();
+    }
+
+    // ✅ GET property by ID
+    @GetMapping("/{id}")
+    public PropertyResponse getPropertyById(@PathVariable Long id) {
+        return propertyService.getPropertyById(id);
     }
 
     @GetMapping("/getAllPropertiesByUserId")
     public List<PropertyResponse> getAllPropertiesByUserId(@RequestHeader("Authorization") String authHeader) {
         return propertyService.getAllPropertiesByUserId(authHeader);
     }
+
     @GetMapping("/getPropertyIdByUserId/{propertyId}")
-    public PropertyResponse getPropertyById(@PathVariable Long propertyId, @RequestHeader("Authorization") String authHeader) {
+    public PropertyResponse getPropertyById(@PathVariable Long propertyId,
+            @RequestHeader("Authorization") String authHeader) {
         return propertyService.getPropertyIdByUserId(propertyId, authHeader);
     }
-    
 
 }
-

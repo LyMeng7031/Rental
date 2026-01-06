@@ -26,7 +26,6 @@ public class JwtUtil {
         this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(base64Secret));
     }
 
- 
     public String generateToken(Long userId, List<Role> roles) {
 
         List<String> roleNames = roles.stream()
@@ -64,13 +63,13 @@ public class JwtUtil {
                 .getBody();
     }
 
-    //  Extract userId
+    // Extract userId
     public Long getUserIdFromToken(String token) {
         return Long.parseLong(parseClaims(token).getSubject());
     }
 
     // Extract roles
-    // @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     public List<String> getRolesFromToken(String token) {
         return parseClaims(token).get("roles", List.class);
     }
