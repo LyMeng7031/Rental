@@ -168,5 +168,59 @@ public class PropertyServiceImpl implements PropertyService {
                 property.getImages().stream().map(PropertyImage::getImageUrl).toList());
 
     }
+    @Transactional
+    @Override
+    public PropertyResponse updateProperty(Long propertyId, PropertyRequest request, String authHeader) {
+
+    // 1. Validate Authorization Header
+    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        throw new ForbiddenException("Authorization header is missing or invalid");
+    }
+    String token = authHeader.substring(7);
+
+    // 2. Extract User ID
+    Long userId = jwtUtil.getUserIdFromToken(token);
+
+    // 3. Find Property (must belong to user)
+    Property property = propertyRepository.findByIdAndUser_Id(propertyId, userId)
+            .orElseThrow(() -> new ResourceNotFoundException("Property not found or access denied"));
+
+    // 4. Update Fields
+    property.setTitle(request.getTitle());
+    property.setDescription(request.getDescription());
+    property.setLocation(request.getLocation());
+    property.setPrice(BigDecimal.valueOf(request.getPrice()));
+    property.setType(request.getType());
+    property.setAvailable(request.isAvailable());
+
+    // 5. Update Images (replace old ones)
+    if (request.getImageUrls() != null) {
+        List<PropertyImage> images = request.getImageUrls().stream()
+                .map(url -> {
+                    PropertyImage img = new PropertyImage();
+                    img.setImageUrl(url);
+                    img.setProperty(property);
+                    return img;
+                }).toList();
+        property.getImages().clear();
+        property.getImages().addAll(images);
+    }
+
+    Property updatedProperty = propertyRepository.save(property);
+
+    // 6. Map Response
+    return new PropertyResponse(
+            updatedProperty.getId(),
+            updatedProperty.getTitle(),
+            updatedProperty.getDescription(),
+            updatedProperty.getLocation(),
+            updatedProperty.getPrice().doubleValue(),
+            updatedProperty.getType(),
+            updatedProperty.isAvailable(),
+            updatedProperty.getImages().stream()
+                    .map(PropertyImage::getImageUrl)
+                    .toList());
+    }
+
 
 }
