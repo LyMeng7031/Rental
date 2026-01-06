@@ -28,78 +28,77 @@ public class PropertyServiceImpl implements PropertyService {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
-    
-@Transactional
-@Override
-public PropertyResponse createProperty(PropertyRequest request, String authHeader) {
+    @Transactional
+    @Override
+    public PropertyResponse createProperty(PropertyRequest request, String authHeader) {
 
-    // 1. Safe Header Extraction
-    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-        throw new ForbiddenException("Authorization header is missing or invalid");
+        // 1. Safe Header Extraction
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new ForbiddenException("Authorization header is missing or invalid");
+        }
+        String token = authHeader.substring(7);
+
+        // 2. Role Check (Check this BEFORE hitting the DB)
+        List<String> roles = jwtUtil.getRolesFromToken(token);
+        if (roles == null || !roles.contains("agent")) {
+            throw new ForbiddenException("You are not allowed to create a property");
+        }
+
+        // 3. User Extraction
+        Long userId = jwtUtil.getUserIdFromToken(token);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // 4. Property Creation
+        Property property = new Property();
+        property.setTitle(request.getTitle());
+        property.setDescription(request.getDescription());
+        property.setLocation(request.getLocation());
+        property.setPrice(BigDecimal.valueOf(request.getPrice()));
+        property.setType(request.getType());
+        property.setAvailable(request.isAvailable());
+        property.setUser(user);
+
+        // 5. Safe Image Mapping
+        if (request.getImageUrls() != null) {
+            List<PropertyImage> images = request.getImageUrls().stream()
+                    .map(url -> {
+                        PropertyImage img = new PropertyImage();
+                        img.setImageUrl(url);
+                        img.setProperty(property);
+                        return img;
+                    }).toList();
+            property.setImages(images);
+        }
+
+        Property savedProperty = propertyRepository.save(property);
+
+        // 6. Response Mapping
+        List<String> imageUrls = (savedProperty.getImages() != null)
+                ? savedProperty.getImages().stream().map(PropertyImage::getImageUrl).toList()
+                : List.of();
+
+        return new PropertyResponse(
+                savedProperty.getId(),
+                savedProperty.getTitle(),
+                savedProperty.getDescription(),
+                savedProperty.getLocation(),
+                savedProperty.getPrice().doubleValue(),
+                savedProperty.getType(),
+                savedProperty.isAvailable(),
+                imageUrls);
     }
-    String token = authHeader.substring(7);
 
-    // 2. Role Check (Check this BEFORE hitting the DB)
-    List<String> roles = jwtUtil.getRolesFromToken(token);
-    if (roles == null || !roles.contains("agent")) {
-        throw new ForbiddenException("You are not allowed to create a property");
-    }
-
-    // 3. User Extraction
-    Long userId = jwtUtil.getUserIdFromToken(token);
-    User user = userRepository.findById(userId)
-            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-    // 4. Property Creation
-    Property property = new Property();
-    property.setTitle(request.getTitle());
-    property.setDescription(request.getDescription());
-    property.setLocation(request.getLocation());
-    property.setPrice(BigDecimal.valueOf(request.getPrice()));
-    property.setType(request.getType());
-    property.setAvailable(request.isAvailable());
-    property.setUser(user);
-
-    // 5. Safe Image Mapping
-    if (request.getImageUrls() != null) {
-        List<PropertyImage> images = request.getImageUrls().stream()
-                .map(url -> {
-                    PropertyImage img = new PropertyImage();
-                    img.setImageUrl(url);
-                    img.setProperty(property);
-                    return img;
-                }).toList();
-        property.setImages(images);
-    }
-
-    Property savedProperty = propertyRepository.save(property);
-
-    // 6. Response Mapping
-    List<String> imageUrls = (savedProperty.getImages() != null) ? 
-        savedProperty.getImages().stream().map(PropertyImage::getImageUrl).toList() : List.of();
-
-    return new PropertyResponse(
-            savedProperty.getId(),
-            savedProperty.getTitle(),
-            savedProperty.getDescription(),
-            savedProperty.getLocation(),
-            savedProperty.getPrice().doubleValue(),
-            savedProperty.getType(),
-            savedProperty.isAvailable(),
-            imageUrls
-    );
-}
-
- // ✅ Get all properties
+    // ✅ Get all properties
     @Override
     public List<PropertyResponse> getAllProperties() {
         return propertyRepository.findAll()
                 .stream()
                 .map(property -> {
-                    List<String> imageUrls = (property.getImages() != null) ?
-                            property.getImages().stream().map(PropertyImage::getImageUrl).toList() :
-                            List.of();
-                             return new PropertyResponse(
+                    List<String> imageUrls = (property.getImages() != null)
+                            ? property.getImages().stream().map(PropertyImage::getImageUrl).toList()
+                            : List.of();
+                    return new PropertyResponse(
                             property.getId(),
                             property.getTitle(),
                             property.getDescription(),
@@ -107,10 +106,10 @@ public PropertyResponse createProperty(PropertyRequest request, String authHeade
                             property.getPrice().doubleValue(),
                             property.getType(),
                             property.isAvailable(),
-                            imageUrls
-                    );
+                            imageUrls);
                 }).toList();
     }
+
     // ✅ Get property by ID
     @Override
     public PropertyResponse getPropertyById(Long id) {
@@ -121,10 +120,10 @@ public PropertyResponse createProperty(PropertyRequest request, String authHeade
 
     // Helper to map Property → PropertyResponse
     private PropertyResponse mapToResponse(Property property) {
-        List<String> imageUrls = (property.getImages() != null) ?
-                property.getImages().stream().map(PropertyImage::getImageUrl).toList() :
-                List.of();
-                return new PropertyResponse(
+        List<String> imageUrls = (property.getImages() != null)
+                ? property.getImages().stream().map(PropertyImage::getImageUrl).toList()
+                : List.of();
+        return new PropertyResponse(
                 property.getId(),
                 property.getTitle(),
                 property.getDescription(),
@@ -132,7 +131,42 @@ public PropertyResponse createProperty(PropertyRequest request, String authHeade
                 property.getPrice().doubleValue(),
                 property.getType(),
                 property.isAvailable(),
-                imageUrls
-        );
+                imageUrls);
     }
+
+    @Override
+    public List<PropertyResponse> getAllPropertiesByUserId(String authHeader) {
+        String token = authHeader.substring(7);
+        Long userId = jwtUtil.getUserIdFromToken(token);
+        List<Property> properties = propertyRepository.findByUser_Id(userId);
+        return properties.stream().map(property -> new PropertyResponse(
+                property.getId(),
+                property.getTitle(),
+                property.getDescription(),
+                property.getLocation(),
+                property.getPrice().doubleValue(),
+                property.getType(),
+                property.isAvailable(),
+                property.getImages().stream().map(PropertyImage::getImageUrl).toList())).toList();
+
+    }
+
+    @Override
+    public PropertyResponse getPropertyIdByUserId(Long propertyId, String authHeader) {
+        String token = authHeader.substring(7);
+        Long userId = jwtUtil.getUserIdFromToken(token);
+        Property property = propertyRepository.findByIdAndUser_Id(propertyId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Property not found"));
+        return new PropertyResponse(
+                property.getId(),
+                property.getTitle(),
+                property.getDescription(),
+                property.getLocation(),
+                property.getPrice().doubleValue(),
+                property.getType(),
+                property.isAvailable(),
+                property.getImages().stream().map(PropertyImage::getImageUrl).toList());
+
+    }
+
 }

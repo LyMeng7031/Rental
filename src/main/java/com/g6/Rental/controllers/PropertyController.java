@@ -13,7 +13,6 @@ import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 
@@ -31,7 +30,7 @@ public class PropertyController {
     }
 
     // ✅ GET all properties
-    @GetMapping
+    @GetMapping("/getAll")
     public List<PropertyResponse> getAllProperties() {
         return propertyService.getAllProperties();
     }
@@ -42,5 +41,15 @@ public class PropertyController {
         return propertyService.getPropertyById(id);
     }
 
+    @GetMapping("/getAllPropertiesByUserId")
+    public List<PropertyResponse> getAllPropertiesByUserId(@RequestHeader("Authorization") String authHeader) {
+        return propertyService.getAllPropertiesByUserId(authHeader);
+    }
+
+    @GetMapping("/getPropertyIdByUserId/{propertyId}")
+    public PropertyResponse getPropertyById(@PathVariable Long propertyId,
+            @RequestHeader("Authorization") String authHeader) {
+        return propertyService.getPropertyIdByUserId(propertyId, authHeader);
+    }
 
 }

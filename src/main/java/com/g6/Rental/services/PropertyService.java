@@ -11,10 +11,11 @@ import com.g6.Rental.dto.response.PropertyResponse;
 public interface PropertyService {
     PropertyResponse createProperty(PropertyRequest request, String authHeader);
 
-    // ✅ Get all properties
     List<PropertyResponse> getAllProperties();
 
-    // ✅ New: Get property by ID
     PropertyResponse getPropertyById(Long id);
 
+    List<PropertyResponse> getAllPropertiesByUserId(String authHeader);
+
+    PropertyResponse getPropertyIdByUserId(Long propertyId, String authHeader);
 }
