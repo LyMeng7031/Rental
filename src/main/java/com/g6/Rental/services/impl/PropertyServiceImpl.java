@@ -225,7 +225,7 @@ public class PropertyServiceImpl implements PropertyService {
     @Override
 public void deleteProperty(Long propertyId, String authHeader) {
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-        throw new RuntimeException("Invalid Authorization header");
+        throw new ForbiddenException("Invalid Authorization header");
     }
 
     String token = authHeader.substring(7);
