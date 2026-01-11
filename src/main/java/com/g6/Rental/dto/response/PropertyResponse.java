@@ -11,10 +11,12 @@ public class PropertyResponse {
     private double price;
     private String type;
     private boolean available;
+    private int totalReviewer;
+    private double averageRating;
     private java.util.List<String> imageUrls;
 
     public PropertyResponse(Long id, String title, String description, String location, double price, String type,
-            boolean available, java.util.List<String> imageUrls) {
+            boolean available, int totalReviewer, double averageRating, java.util.List<String> imageUrls) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -22,6 +24,8 @@ public class PropertyResponse {
         this.price = price;
         this.type = type;
         this.available = available;
+        this.totalReviewer = totalReviewer;
+        this.averageRating = averageRating;
         this.imageUrls = imageUrls;
     }
 

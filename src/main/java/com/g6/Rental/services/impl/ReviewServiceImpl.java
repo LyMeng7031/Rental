@@ -1,9 +1,13 @@
 package com.g6.Rental.services.impl;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 
 import com.g6.Rental.dto.request.ReviewRequest;
 import com.g6.Rental.dto.response.ReviewResponse;
+import com.g6.Rental.dto.response.GetReviewResponse;
 import com.g6.Rental.entity.Property;
 import com.g6.Rental.entity.Review;
 import com.g6.Rental.entity.User;
@@ -68,4 +72,35 @@ public class ReviewServiceImpl implements ReviewService {
                 savedReview.getComment()
         );
     }
+   @Override
+public GetReviewResponse getAllReview(Long propertyId) {
+
+    Property property = propertyRepository.findById(propertyId)
+            .orElseThrow(() -> new ResourceNotFoundException("Property not found"));
+
+    List<Review> reviews = reviewRepository.findByPropertyId(propertyId);
+    List<ReviewResponse> reviewDetails = reviews.stream().map(r -> new ReviewResponse(
+            r.getId(),
+            r.getRating(),
+            r.getComment()
+    )).collect(Collectors.toList());
+
+
+    int totalReviewer = reviewDetails.size();
+
+    double averageRating = reviews.stream()
+            .mapToInt(Review::getRating)
+            .average()
+            .orElse(0.0);
+    double roundedRating = Math.round(averageRating * 10.0) / 10.0;
+
+    return new GetReviewResponse(
+        property.getId(),
+         roundedRating, 
+         totalReviewer, 
+        reviewDetails
+);
+}
+
+
 }

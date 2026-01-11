@@ -86,6 +86,8 @@ public class PropertyServiceImpl implements PropertyService {
                 savedProperty.getPrice().doubleValue(),
                 savedProperty.getType(),
                 savedProperty.isAvailable(),
+                0,
+                0.0,
                 imageUrls);
     }
 
@@ -106,6 +108,8 @@ public class PropertyServiceImpl implements PropertyService {
                             property.getPrice().doubleValue(),
                             property.getType(),
                             property.isAvailable(),
+                            property.getTotalReviewers(),
+                            property.getAverageRating(),
                             imageUrls);
                 }).toList();
     }
@@ -131,6 +135,8 @@ public class PropertyServiceImpl implements PropertyService {
                 property.getPrice().doubleValue(),
                 property.getType(),
                 property.isAvailable(),
+                property.getTotalReviewers(), 
+                property.getAverageRating(),
                 imageUrls);
     }
 
@@ -147,6 +153,8 @@ public class PropertyServiceImpl implements PropertyService {
                 property.getPrice().doubleValue(),
                 property.getType(),
                 property.isAvailable(),
+                property.getTotalReviewers(),
+                property.getAverageRating(),
                 property.getImages().stream().map(PropertyImage::getImageUrl).toList())).toList();
 
     }
@@ -165,6 +173,8 @@ public class PropertyServiceImpl implements PropertyService {
                 property.getPrice().doubleValue(),
                 property.getType(),
                 property.isAvailable(),
+                property.getTotalReviewers(),
+                property.getAverageRating(),
                 property.getImages().stream().map(PropertyImage::getImageUrl).toList());
 
     }
@@ -217,6 +227,8 @@ public class PropertyServiceImpl implements PropertyService {
             updatedProperty.getPrice().doubleValue(),
             updatedProperty.getType(),
             updatedProperty.isAvailable(),
+            updatedProperty.getTotalReviewers(),
+            updatedProperty.getAverageRating(),
             updatedProperty.getImages().stream()
                     .map(PropertyImage::getImageUrl)
                     .toList());
