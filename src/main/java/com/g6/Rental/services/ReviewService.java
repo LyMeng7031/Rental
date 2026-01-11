@@ -4,8 +4,10 @@ import org.springframework.stereotype.Service;
 
 import com.g6.Rental.dto.request.ReviewRequest;
 import com.g6.Rental.dto.response.ReviewResponse;
+import com.g6.Rental.dto.response.GetReviewResponse;
 
 @Service
 public interface ReviewService {
     ReviewResponse createReview(Long propertyId, ReviewRequest request, String authHeader);
+    GetReviewResponse getAllReview(Long propertyId);
 }
